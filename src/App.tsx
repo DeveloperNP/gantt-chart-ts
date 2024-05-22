@@ -1,6 +1,10 @@
-import './App.css';
-import { Gantt, Task, EventOption, StylingOption, ViewMode, DisplayOption } from 'gantt-task-react';
-import "gantt-task-react/dist/index.css";
+import './App.css'
+import { Gantt, Task, ViewMode } from 'gantt-task-react'
+import { Theme, presetGpnDefault } from '@consta/uikit/Theme'
+import { useGanttTaskReactAdapter } from '@consta/gantt-task-react-adapter/useGanttTaskReactAdapter'
+import { useState } from 'react'
+import { ViewSwitcher } from './components/ViewSwitcher/ViewSwitcher'
+
 
 const histogramRows = [
   {
@@ -33,82 +37,57 @@ const histogramRows = [
     dateTo: 'Wed, 03 Dec 2024 07:59:00 GMT',
     background: 'yellow',
   },
-];
+]
 
-let tasks: Task[] = [
-  {
-    start: new Date(2019, 9, 1),
-    end: new Date(2020, 11, 1),
-    name: 'Idea',
-    id: 'Task 1',
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: 'blue', progressSelectedColor: '#ff9e0d' },
-  },
-  {
-    start: new Date(2020, 4, 1),
-    end: new Date(2021, 5, 3),
-    name: 'Idea',
-    id: 'Task 2',
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: 'green', progressSelectedColor: '#ff9e0d' },
-  },
-  {
-    start: new Date(2020, 3, 1),
-    end: new Date(2022, 11, 3),
-    name: 'Idea',
-    id: 'Task 3',
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: 'red', progressSelectedColor: '#ff9e0d' },
-  },
-  {
-    start: new Date(2021, 3, 21),
-    end: new Date(2021, 11, 3),
-    name: 'Idea',
-    id: 'Task 4',
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: 'brown', progressSelectedColor: '#ff9e0d' },
-  },
-  {
-    start: new Date(2021, 1, 1),
-    end: new Date(2024, 11, 3),
-    name: 'Idea',
-    id: 'Task 5',
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: 'yellow', progressSelectedColor: '#ff9e0d' },
+const tasks: Task[] = histogramRows.map(el => ({
+  start: new Date(el.dateFrom),
+  end: new Date(el.dateTo),
+  name: '',
+  id: `Task ${el.id}`,
+  type: 'task',
+  progress: 100,
+  isDisabled: true,
+  styles: { progressColor: el.background }
+}))
+
+export default function App() {
+  const { prefix, ...styleOptions } = useGanttTaskReactAdapter({ size: 'l' })
+  const [view, setView] = useState<ViewMode>(ViewMode.Month)
+  const [isChecked, setIsChecked] = useState(false)
+
+  let columnWidth
+  if (view === ViewMode.QuarterDay) {
+    columnWidth = 40
+  } else if (view === (ViewMode.HalfDay || ViewMode.Day)) {
+    columnWidth = 60
+  } else if (view === ViewMode.Week) {
+    columnWidth = 50
+  } else if (view === ViewMode.Month) {
+    columnWidth = 80
+  } else if (view === ViewMode.Year) {
+    columnWidth = 150
   }
-];
-
-
-function App() {
-
-  const mappedTasks: Task[] = histogramRows.map(el => ({
-    start: new Date(el.dateFrom),
-    end: new Date(el.dateTo),
-    name: '',
-    id: `Task ${el.id}`,
-    type: 'task',
-    progress: 100,
-    isDisabled: true,
-    styles: { progressColor: el.background }
-  }))
 
   return (
-    <>
-      <h1>GANTT CHART</h1>
-      {/* <Gantt tasks={tasks} viewMode={ViewMode.Year} /> */}
-      <Gantt tasks={mappedTasks} viewMode={ViewMode.Year} />
-    </>
-  );
-}
+    <Theme preset={presetGpnDefault}>
+      <ViewSwitcher
+        onViewModeChange={(viewMode: ViewMode) => setView(viewMode)}
+        onViewListChange={setIsChecked}
+        isChecked={isChecked}
+      />
 
-export default App;
+      <div className={prefix}>
+        <h2>Gantt Chart</h2>
+        <Gantt
+          {...styleOptions}
+          tasks={tasks}          
+          viewMode={view}
+          listCellWidth={isChecked ? "160px" : ""}
+          columnWidth={columnWidth}
+          preStepsCount={0}
+          barCornerRadius={10}       
+        />
+      </div>
+    </Theme>
+  )
+}

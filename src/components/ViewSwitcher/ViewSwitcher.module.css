@@ -1,0 +1,11 @@
+.viewModeContainer {
+  padding: 10px;
+  width: 500px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.switcher {
+  padding-left: 20px;
+  margin-bottom: 40px;
+}
